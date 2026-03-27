@@ -1,0 +1,4 @@
+spring.elasticsearch:
+# uncomment when x-ppack is true for non-local environments
+#  username: [the username]
+#  password: [the pass encrypted]

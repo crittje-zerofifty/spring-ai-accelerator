@@ -1,0 +1,16 @@
+# Ollama Spring docs: https://docs.spring.io/spring-ai/reference/api/chat/ollama-chat.html
+spring:
+  ai:
+    ollama:
+      chat:
+        options:
+          model: mistral:7b # for local development this Mistral model is often the most convenient
+          keep_alive: 10m # for demo's you might one the memory longer in to memory
+      base-url: http://localhost:11434
+
+management:
+  endpoint:
+    health:
+      show-components: always
+      show-details: when-authorized
+

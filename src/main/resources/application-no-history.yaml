@@ -1,0 +1,5 @@
+# Note: If your no-history app does require a datasource remove the autoconfigure.exclude
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration

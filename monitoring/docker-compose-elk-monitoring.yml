@@ -1,0 +1,40 @@
+services:
+  # 1. DB for logs
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # Switched off for local use. Switch on for production
+      - voor productie!
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+
+  # 2. Processing logs
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.0
+    container_name: logstash
+    command: >
+      bash -c "logstash -e 'input { tcp { port => 5044 codec => json } } 
+      output { elasticsearch { hosts => [\"http://elasticsearch:9200\"] index => \"spring-ai-logs-%{+YYYY.MM.dd}\" } }'"
+    ports:
+      - "5044:5044"
+    depends_on:
+      - elasticsearch
+
+  # 3. For the dashboard
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
