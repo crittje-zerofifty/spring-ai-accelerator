@@ -1,22 +1,24 @@
 package nl.zerofifty.springaiaccelerator.application.usecase;
 
 import nl.zerofifty.springaiaccelerator.application.port.input.ChatHistoryPort;
+import nl.zerofifty.springaiaccelerator.application.port.output.LlmHistoryClientPort;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 @Service
 @Profile("history")
 public class ChatWithHistoryUseCase implements ChatHistoryPort {
 
-    private final ChatHistoryPort chatHistoryPort;
+    private final LlmHistoryClientPort chatHistoryPort;
 
-    public ChatWithHistoryUseCase(ChatHistoryPort chatHistoryPort) {
+    public ChatWithHistoryUseCase(LlmHistoryClientPort chatHistoryPort) {
         this.chatHistoryPort = chatHistoryPort;
     }
 
     @Override
-    public String chat(String prompt, String chatId) {
+    public Flux<String> chat(String prompt, String chatId) {
         // Your business logic here
-        return chatHistoryPort.chat(prompt, chatId);
+        return chatHistoryPort.call(prompt, chatId);
     }
 }

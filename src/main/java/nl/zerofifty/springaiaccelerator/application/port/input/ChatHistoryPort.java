@@ -1,6 +1,8 @@
 package nl.zerofifty.springaiaccelerator.application.port.input;
 
+import reactor.core.publisher.Flux;
+
 public interface ChatHistoryPort {
 
-    String chat(final String prompt, final String chatId);
+    Flux<String> chat(final String prompt, final String chatId);
 }
