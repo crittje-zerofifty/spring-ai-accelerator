@@ -1,3 +1,5 @@
+name: elk-monitoring
+
 services:
   # 1. DB for logs
   elasticsearch:

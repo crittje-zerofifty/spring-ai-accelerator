@@ -31,6 +31,8 @@ ext {
 dependencies {
     // Monitoring with ELK
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    // Monitoring with Grafana/Prometheus
+    implementation 'io.micrometer:micrometer-registry-prometheus'
     // Basic Spring boot
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
