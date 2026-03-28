@@ -1,0 +1,9 @@
+spring:
+  ai:
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1024 # For default loaded ollama embedding model
+        table-name: vector_store
+        initialize-schema: on

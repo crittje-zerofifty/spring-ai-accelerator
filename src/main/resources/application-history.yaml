@@ -1,11 +1,4 @@
 spring:
-  flyway:
-    enabled: false
-  datasource:
-    url: jdbc:postgresql://localhost:5432/accelerator
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
   ai:
     chat:
       memory:
