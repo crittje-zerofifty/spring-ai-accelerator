@@ -1,5 +1,6 @@
 package nl.zerofifty.springaiaccelerator.infrastructure.utils;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.CommandLineRunner;
@@ -20,10 +21,12 @@ import java.util.List;
 @Profile("test-skill-loader")
 public class SkillDataLoader {
 
+    private static final Logger log = LoggerFactory.getLogger(SkillDataLoader.class);
+
     @Bean
     CommandLineRunner loadTestData(VectorStore vectorStore) {
         return args -> {
-//            log.info("Loading initial skill data into PgVector store...");
+            log.info("Loading initial skill data into PgVector store...");
 
             List<Document> documents = List.of(
                     new Document("Pete is highly skilled at watching TV."),
@@ -33,10 +36,9 @@ public class SkillDataLoader {
 
             try {
                 vectorStore.add(documents);
-//                log.info("Successfully indexed {} documents in the vector store.", documents.size());
+                log.info("Successfully indexed {} documents in the vector store.", documents.size());
             } catch (Exception e) {
-                System.out.printf("Failed to load test data into vector store: %s%n", e.getMessage());
-//                log.error("Failed to load test data into vector store", e);
+                log.error("Failed to load test data into vector store", e);
             }
         };
     }
