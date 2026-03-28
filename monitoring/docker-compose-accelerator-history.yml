@@ -2,7 +2,7 @@ name: spring-ai-accelerator-history
 version: '3.8'
 services:
   postgres:
-    image: postgres:latest
+    image: ankane/pgvector:latest
     container_name: spring-ai-accelerator
     environment:
       POSTGRES_DB: accelerator

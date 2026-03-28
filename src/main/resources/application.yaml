@@ -1,1 +1,8 @@
-spring.application.name: spring-ai-accelerator [Your app name here!]
+spring:
+  application.name: spring-ai-accelerator [Your app name here!]
+  profiles:
+    group:
+      rag:
+        - jdbc
+      history:
+        - jdbc
