@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 @Component
-@Profile("history")
+@Profile({"history", "auth-azure"})
 public class LlmWithHistoryAdapter implements LlmHistoryClientPort {
 
     private final ChatClient chatClient;

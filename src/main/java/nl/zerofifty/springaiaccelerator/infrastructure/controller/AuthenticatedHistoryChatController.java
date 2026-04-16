@@ -3,8 +3,6 @@ package nl.zerofifty.springaiaccelerator.infrastructure.controller;
 
 import jakarta.annotation.Nonnull;
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;
-import nl.zerofifty.springaiaccelerator.application.port.input.ChatHistoryPort;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -17,19 +15,20 @@ import reactor.core.publisher.Flux;
  * Controller to prompt with context of history
  */
 @RestController
-@Profile("history & !auth-azure")
-public class HistoryChatController {
+@Profile("auth-azure")
+public class AuthenticatedHistoryChatController {
 
-    private final ChatHistoryPort chatHistoryPort;
+    private final AuthenticatedChatHistoryPort authenticatedChatHistoryPort;
 
-    public HistoryChatController(ChatHistoryPort chatHistoryPort) {
-        this.chatHistoryPort = chatHistoryPort;
+    public AuthenticatedHistoryChatController(AuthenticatedChatHistoryPort authenticatedChatHistoryPort) {
+        this.authenticatedChatHistoryPort = authenticatedChatHistoryPort;
     }
 
     @GetMapping("/chat")
-    public Flux<String> chat(@RequestParam String prompt,
-                            @RequestParam @Nonnull String chatId) {
-        return chatHistoryPort.chat(prompt, chatId);
+    public Flux<String> authenticatedChat(@RequestParam String prompt,
+                                         @RequestParam @Nonnull String chatId,
+                                         @AuthenticationPrincipal OidcUser user) {
+        return authenticatedChatHistoryPort.chat(prompt, chatId, user.getEmail());
     }
 
 }

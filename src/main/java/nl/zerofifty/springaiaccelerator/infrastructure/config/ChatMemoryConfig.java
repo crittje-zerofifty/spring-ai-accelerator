@@ -31,7 +31,6 @@ public class ChatMemoryConfig {
     @Bean
     public MessageChatMemoryAdvisor messageChatMemoryAdvisor(ChatMemory chatMemory) {
         return MessageChatMemoryAdvisor.builder(chatMemory)
-                .conversationId("chat_memory_conversation_id")
                 .build();
     }
 }
