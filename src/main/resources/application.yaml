@@ -6,3 +6,8 @@ spring:
         - jdbc
       history:
         - jdbc
+      auth-azure:
+        - jdbc
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
