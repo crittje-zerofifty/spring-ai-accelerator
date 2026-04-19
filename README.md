@@ -14,7 +14,32 @@ While you can run Ollama via Docker, we generally recommend a **native installat
 
 ---
 
-## 2. Modularity & Profiles
+## 2. Architecture: Hexagonal & DDD
+
+This project follows **Hexagonal Architecture** (also known as Ports and Adapters) and **Domain-Driven Design (DDD)** principles to ensure high modularity, testability, and a clear separation of concerns.
+
+### Core Principles
+- **Dependency Inversion**: The core business logic (Application layer) is independent of external technologies (Infrastructure layer). Infrastructure depends on Application, never the other way around.
+- **Ports & Adapters**: 
+    - **Input Ports**: Interfaces that define how the outside world can interact with the application (e.g., `ChatHistoryPort`).
+    - **Output Ports**: Interfaces that define what the application needs from the outside world (e.g., `LlmHistoryClientPort`).
+    - **Adapters**: Implementations of these ports in the Infrastructure layer (e.g., REST Controllers for input, LLM Clients for output).
+- **Usecases**: Specific implementations of business logic that coordinate the flow of data through the ports.
+- **Spring Boot & Spring AI**: The project leverages **Spring Boot** for dependency injection and lifecycle management, and **Spring AI** to integrate with LLMs, using `ChatClient`, `Advisors`, and `VectorStore`.
+
+### Layer Structure
+- `application`: Contains the "inside" of the hexagon.
+    - `port.input`: Inbound interfaces (the API of the application).
+    - `port.output`: Outbound interfaces (the SPI of the application).
+    - `usecase`: Implementation of the business logic.
+- `infrastructure`: Contains the "outside" of the hexagon.
+    - `adapter`: Implementations of output ports (e.g., Database, LLM, External APIs).
+    - `controller`: Entry points for input ports (e.g., Web, CLI).
+    - `config`: Wiring of the application using Spring configuration.
+
+---
+
+## 3. Modularity & Profiles
 
 This application is built with modularity at its core. You can easily toggle features on or off using Spring Profiles.
 
