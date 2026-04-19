@@ -27,6 +27,8 @@ This application is built with modularity at its core. You can easily toggle fea
 | `auth-azure` | Enables Azure AD OAuth2 authentication. | Production or secured environments requiring user login. |
 | `rag` | Enables Retrieval Augmented Generation. | When you want the LLM to use your own data/documents. |
 | `ollama` | Configures Ollama as the AI provider. | Local development with Ollama. |
+| `openai` | Configures OpenAI as the AI provider. | Using OpenAI models (requires `OPENAI_API_KEY`). |
+| `claude` | Configures Anthropic (Claude) as the AI provider. | Using Claude models (requires `ANTHROPIC_API_KEY`). |
 | `elk-monitoring` | Enables logging and monitoring via ELK stack. | For deep log analysis and observability. |
 | `grafana-monitoring` | Enables Micrometer metrics for Grafana. | For real-time performance dashboards. |
 
@@ -37,6 +39,10 @@ You can switch profiles in your `application.yaml` or via command line:
 ```
 
 This example builds an application with **history** enabled. In addition, it uses **Ollama** as the AI provider and **Grafana** for monitoring.
+
+When using `openai` or `claude` profiles, ensure you have the corresponding API key set as an environment variable:
+- For `openai`: `OPENAI_API_KEY`
+- For `claude`: `ANTHROPIC_API_KEY`
 
 ---
 
