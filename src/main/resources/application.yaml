@@ -8,6 +8,9 @@ spring:
         - jdbc
       auth-azure:
         - jdbc
+  ai:
+    openai:
+      api-key: overwritten-by-env-var-if-open-ai-profile-is-active
   flyway:
     enabled: false
     baseline-on-migrate: true
