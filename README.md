@@ -146,8 +146,28 @@ To get a feel for how Secure RAG works, you can use the `test-secure-data-loader
 - **CONFIDENTIAL**: Accessible only by users with the appropriate security level.
 
 ### Runtime Filtering vs. Startup Configuration
-You might wonder why the security filter is configured at **runtime** (within the adapter) rather than as a static configuration bean. 
-
 The filtering needs to be dynamic because the security level is determined by the **context of the logged-in user**. Since we want to apply different filters depending on who is asking the question, we must build the filter expression during the request execution. While static configuration is easier to manage, it doesn't allow for the user-specific context required for multi-level document security.
+
+---
+
+## 6. Database Migrations (Flyway)
+
+In the `auth-azure` and `secure-rag` profiles, we use **Flyway** for database migrations.
+
+### Why Flyway?
+While Spring Boot's auto-DDL (`spring.jpa.hibernate.ddl-auto: update`) is convenient for quick prototyping, it is generally discouraged in **production-like environments**. 
+- **Control**: Flyway gives you explicit control over how the schema evolves.
+- **Versioning**: Every change is versioned (see `src/main/resources/db/migration`), making it easy to track what was applied and when.
+- **Consistency**: It ensures that all environments (dev, test, prod) have exactly the same database schema, preventing "it works on my machine" issues caused by inconsistent table structures.
+
+### Development Tips: Starting Fresh
+As a developer, you might frequently switch between profiles or want to "start fresh" with your tables. Flyway tracks applied migrations in a table called `flyway_schema_history`.
+
+If you want to re-run migrations from scratch:
+1. Open your database tool (e.g., DBeaver or `psql`).
+2. Delete the records from `flyway_schema_history` (except potentially the first one if you want to keep the baseline, or all of them if you are dropping the tables manually).
+3. Restart the application.
+
+This allows Flyway to see the migrations as "pending" again and re-execute them against your database.
 
 
