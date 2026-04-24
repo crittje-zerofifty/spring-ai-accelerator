@@ -1,5 +1,7 @@
 package nl.zerofifty.springaiaccelerator.infrastructure.evalutequality;
 
+import nl.zerofifty.springaiaccelerator.infrastructure.adapter.EvaluateResultAdapter;
+import nl.zerofifty.springaiaccelerator.infrastructure.dao.EvaluationResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -16,32 +18,38 @@ import java.util.stream.Collectors;
 @Profile("eval-testing")
 public class EvaluateQualityAdvisor implements StreamAdvisor {
 
+    private final EvaluateResultAdapter evaluateResultAdapter;
+    private final List<EvaluationMetricsPublisher> publishers;
+
+    public EvaluateQualityAdvisor(EvaluateResultAdapter evaluateResultAdapter, List<EvaluationMetricsPublisher> publishers) {
+        this.evaluateResultAdapter = evaluateResultAdapter;
+        this.publishers = publishers;
+    }
+
     public @NonNull Flux<ChatClientResponse> adviseStream(@NonNull ChatClientRequest request, StreamAdvisorChain chain) {
         return chain.nextStream(request)
-                .flatMap(response -> {
-                    if (response.chatResponse() == null) {
-                        return Flux.just(response);
-                    }
+                .collectList() // Verzamel alle chunks van de stream
+                .flatMapMany(responses -> {
+                    if (responses.isEmpty()) return Flux.empty();
 
-                    Object retrievedDocuments = response.context().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
-                    if (retrievedDocuments == null) {
-                        return Flux.just(response);
-                    }
+                    String prompt = request.prompt().getUserMessage().getText();
 
-                    @SuppressWarnings("unchecked")
-                    List<Document> docs = (List<Document>) retrievedDocuments;
+                    // 2. Haal de Context op (uit de metadata van de eerste response)
+                    List<Document> docs =
+                            (List<Document>) responses.getFirst().context().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
+                    String contextString = (docs == null || docs.isEmpty())
+                            ? "No context found"
+                            : docs.stream().map(Document::getText).collect(Collectors.joining("\n---\n"));
 
-                    if (docs.isEmpty()) {
-                        return Flux.just(response);
-                    }
-                    String contextString =
-                            docs.stream()
-                                    .map(Document::getMetadata)
-                                    .map(meta -> meta.get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS))
-                                    .map(String::valueOf)
-                                    .collect(Collectors.joining("\n---\n"));
-                    return Flux.just(response)
-                            .contextWrite(ctx -> ctx.put("retrieved_context", contextString));
+                    String fullAnswer = responses.stream()
+                            .map(res -> res.chatResponse().getResult().getOutput().getText())
+                            .collect(Collectors.joining());
+
+                    EvaluationResponse evalResult = evaluateResultAdapter.evaluate(prompt, contextString, fullAnswer);
+
+                    publishers.forEach(p -> p.publish(evalResult));
+
+                    return Flux.fromIterable(responses);
                 });
     }
 
@@ -50,9 +58,14 @@ public class EvaluateQualityAdvisor implements StreamAdvisor {
         return "EvalTestingAdvisor";
     }
 
+    /*
+      Should be lower than the other QuestionAnswerAdvisor for RAG.
+      Otherwise the evaluation also includes the injected RAG context.
+      Implying you've got the context twice for evaluation.
+     */
     @Override
     public int getOrder() {
-        return 10;
+        return -10;
     }
 }
 

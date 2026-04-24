@@ -1,6 +1,5 @@
 package nl.zerofifty.springaiaccelerator.infrastructure.adapter;
 
-import nl.zerofifty.springaiaccelerator.application.annotation.EvaluateQuality;
 import nl.zerofifty.springaiaccelerator.application.port.output.LlmSecureRagClient;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
