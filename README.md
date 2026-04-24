@@ -1,17 +1,62 @@
 # Spring AI Accelerator
 
-A super modular Spring AI project designed to jumpstart your LLM-based applications.
+In the rapidly evolving AI landscape, the vast majority of resources and boilerplates are tailored for Python 
+(LangChain) or JavaScript. While great for prototyping, these often fall short when integrated into **Enterprise 
+Java ecosystems**.
 
+Java developers in corporate environments face unique challenges: strict security requirements, complex identity 
+management, and the need for robust observability. **Spring AI Accelerator** was built to bridge this gap.
+
+## Why this project?
+1. **Production-Ready vs. Prototype**: Most AI examples stop at a simple prompt. This project starts with the "boring" 
+but 
+critical parts: **Azure Entra ID (OAuth2), Flyway migrations, Monitoring and Persistent JDBC Chat Memory**.
+
+2. **The "Sovereign AI" Approach**: Companies should have full control over their data. By providing 
+first-class support for **Ollama** and **PgVector**, this project enables high-performance RAG architectures that can 
+run entirely on local or sovereign soil.
+
+3. **Enterprise Observability**: Transitioning from a developer's laptop to production requires monitoring. It contains 
+pre-integrated ELK (Logging) and Grafana (Metrics) so you can track token usage, latency, and model performance from day one.
+
+4. **Architectural Flexibility**: Using a profile-based, provider-agnostic design, you can switch between Claude, 
+OpenAI, 
+or local Ollama models without changing a single line of business logic. This prevents vendor lock-in and future-proofs your AI strategy.
+
+### Developer-First Experience
+Done: The heavy lifting of navigating the early "milestone" versions of Spring AI, so you don't have to. But we went 
+further than just providing a working demo:
+
+- **Hexagonal Architecture (Ports & Adapters)**: The project is structured to keep the AI logic decoupled from external 
+providers. This ensures that switching from OpenAI to a local Ollama instance—or swapping your database—doesn't leak infrastructure details into your core domain.
+
+- **Domain-Driven Design (DDD)**: Organized the codebase around clear domain boundaries. This makes the project 
+highly scalable and ensures that as your AI features grow, your code remains organized and meaningful.
 ## 1. Ollama Installation
 
 To run Large Language Models locally, we recommend using **Ollama**.
 
 ### Why Not Docker?
-While you can run Ollama via Docker, we generally recommend a **native installation**. Running an LLM inside a Docker container adds an extra virtualization layer that can impact performance, especially when it comes to GPU acceleration. For the best performance and lowest latency, install it directly on your host machine.
+While you can run Ollama via Docker, we generally recommend a **native installation** for most users. Running an LLM inside a Docker container adds an extra virtualization layer that can impact performance, especially when it comes to GPU acceleration.
 
-- **Native Installation**: Download from [ollama.com](https://ollama.com/) and follow the instructions for your OS.
-- **Docker (Optional)**: If you still prefer Docker, you can use the official `ollama/ollama` image, but ensure you have the appropriate GPU drivers passed through.
+#### Linux & Docker Performance
+On **Linux**, you can achieve near-native performance by using the NVIDIA Container Toolkit and passing the GPU through with the `--gpus all` flag. 
 
+- **Pros**: 
+    - Isolated environment.
+    - Performance is almost identical to native (as Docker on Linux shares the host kernel).
+- **Cons**: 
+    - Complex setup (requires NVIDIA Container Toolkit).
+    - Driver version mismatches can cause troubleshooting headaches.
+    - Potential overhead in memory management compared to bare metal.
+
+**Is it "good enough"?**
+Yes. For many production environments, the trade-off for containerization is worth the minimal performance hit. Benchmarks show that when properly configured, the overhead is negligible (typically < 1-2%).
+
+**References**:
+- [Ollama Docker Hub - GPU Acceleration](https://hub.docker.com/r/ollama/ollama)
+- [NVIDIA Container Toolkit Documentation](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- [Benchmarking GPU Passthrough Performance on Docker for AI Cloud System](https://jurnal.itscience.org/index.php/brilliance/article/view/6794#:~:text=In%20another%20case%2C%20GPU%20passthrough,deployment%20in%20a%20limited%20environment.) (Example source for performance parity)
 ---
 
 ## 2. Architecture: Hexagonal & DDD
@@ -51,7 +96,11 @@ This application is built with modularity at its core. You can easily toggle fea
 | `history` | Enables chat history (JDBC based). | When you need the LLM to remember previous context. |
 | `auth-azure` | Enables Azure AD OAuth2 authentication. | Production or secured environments requiring user login. |
 | `rag` | Enables Retrieval Augmented Generation. | When you want the LLM to use your own data/documents. |
+| `secure-rag` | Enables Secure RAG with metadata filtering. | When you need to restrict document access based on user security levels. |
+| `test-secure-data-loader` | Preloads sample secure data for testing. | To quickly test and understand the Secure RAG process. |
 | `ollama` | Configures Ollama as the AI provider. | Local development with Ollama. |
+| `openai` | Configures OpenAI as the AI provider. | Using OpenAI models (requires `OPENAI_API_KEY`). |
+| `claude` | Configures Anthropic (Claude) as the AI provider. | Using Claude models (requires `ANTHROPIC_API_KEY`). |
 | `elk-monitoring` | Enables logging and monitoring via ELK stack. | For deep log analysis and observability. |
 | `grafana-monitoring` | Enables Micrometer metrics for Grafana. | For real-time performance dashboards. |
 
@@ -62,6 +111,14 @@ You can switch profiles in your `application.yaml` or via command line:
 ```
 
 This example builds an application with **history** enabled. In addition, it uses **Ollama** as the AI provider and **Grafana** for monitoring.
+
+When using `openai` or `claude` profiles, ensure you have the corresponding API key set as an environment variable:
+- For `openai`: `OPENAI_API_KEY`
+- For `claude`: `ANTHROPIC_API_KEY`
+
+### API Documentation (Swagger)
+When the application is running, you can access the interactive API documentation (Swagger UI) at:
+[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 ---
 
@@ -147,5 +204,44 @@ Currently, the service is configured for **OAuth2 Login** (Authorization Code Fl
 - **Service-to-Service**: If you want to call this as a pure REST API with a `Bearer` token from a mobile app or another service, you would need to adjust the `AzureSecurityConfig` to support `oauth2ResourceServer`. 
 
 When `auth-azure` is active, the `/chat` endpoint expects the user to be authenticated. If you call it without a valid session, you will receive a `401 Unauthorized` or be redirected to the login page.
+
+---
+
+## 5. Secure RAG (Metadata Filtering)
+
+The `secure-rag` profile extends the standard RAG capabilities by adding a security layer that filters documents based on the logged-in user's permissions.
+
+### Dependency on Auth Profiles
+The `secure-rag` profile **must always be used with an authentication profile** (e.g., `auth-azure`). This is because the security filtering logic depends on the identity of the logged-in user. If you attempt to start the application with `secure-rag` but without an `auth-` profile, a startup error will be thrown by the `ProfileValidatorConfig` to prevent unsecured access.
+
+### Preloading Test Data
+To get a feel for how Secure RAG works, you can use the `test-secure-data-loader` profile. This will automatically preload two types of documents into your vector store:
+- **PUBLIC**: Accessible by everyone.
+- **CONFIDENTIAL**: Accessible only by users with the appropriate security level.
+
+### Runtime Filtering vs. Startup Configuration
+The filtering needs to be dynamic because the security level is determined by the **context of the logged-in user**. Since we want to apply different filters depending on who is asking the question, we must build the filter expression during the request execution. While static configuration is easier to manage, it doesn't allow for the user-specific context required for multi-level document security.
+
+---
+
+## 6. Database Migrations (Flyway)
+
+In the `auth-azure` and `secure-rag` profiles, we use **Flyway** for database migrations.
+
+### Why Flyway?
+While Spring Boot's auto-DDL (`spring.jpa.hibernate.ddl-auto: update`) is convenient for quick prototyping, it is generally discouraged in **production-like environments**. 
+- **Control**: Flyway gives you explicit control over how the schema evolves.
+- **Versioning**: Every change is versioned (see `src/main/resources/db/migration`), making it easy to track what was applied and when.
+- **Consistency**: It ensures that all environments (dev, test, prod) have exactly the same database schema, preventing "it works on my machine" issues caused by inconsistent table structures.
+
+### Development Tips: Starting Fresh
+As a developer, you might frequently switch between profiles or want to "start fresh" with your tables. Flyway tracks applied migrations in a table called `flyway_schema_history`.
+
+If you want to re-run migrations from scratch:
+1. Open your database tool (e.g., DBeaver or `psql`).
+2. Delete the records from `flyway_schema_history` (except potentially the first one if you want to keep the baseline, or all of them if you are dropping the tables manually).
+3. Restart the application.
+
+This allows Flyway to see the migrations as "pending" again and re-execute them against your database.
 
 

@@ -1,5 +1,12 @@
 # Ollama Spring docs: https://docs.spring.io/spring-ai/reference/api/chat/ollama-chat.html
 spring:
+  autoconfigure:
+    # If you pick ollama, claude or openai, and remove the irrelevant spring boot starters you can remove this.
+    exclude:
+      - org.springframework.ai.model.anthropic.autoconfigure.AnthropicChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+
   ai:
     ollama:
       chat:
