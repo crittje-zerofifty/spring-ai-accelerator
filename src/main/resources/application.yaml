@@ -8,6 +8,8 @@ spring:
         - jdbc
       auth-azure:
         - jdbc
+      secure-rag:
+        - rag
   ai:
     openai:
       api-key: overwritten-by-env-var-if-open-ai-profile-is-active

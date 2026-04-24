@@ -26,6 +26,8 @@ This application is built with modularity at its core. You can easily toggle fea
 | `history` | Enables chat history (JDBC based). | When you need the LLM to remember previous context. |
 | `auth-azure` | Enables Azure AD OAuth2 authentication. | Production or secured environments requiring user login. |
 | `rag` | Enables Retrieval Augmented Generation. | When you want the LLM to use your own data/documents. |
+| `secure-rag` | Enables Secure RAG with metadata filtering. | When you need to restrict document access based on user security levels. |
+| `test-secure-data-loader` | Preloads sample secure data for testing. | To quickly test and understand the Secure RAG process. |
 | `ollama` | Configures Ollama as the AI provider. | Local development with Ollama. |
 | `openai` | Configures OpenAI as the AI provider. | Using OpenAI models (requires `OPENAI_API_KEY`). |
 | `claude` | Configures Anthropic (Claude) as the AI provider. | Using Claude models (requires `ANTHROPIC_API_KEY`). |
@@ -128,5 +130,24 @@ Currently, the service is configured for **OAuth2 Login** (Authorization Code Fl
 - **Service-to-Service**: If you want to call this as a pure REST API with a `Bearer` token from a mobile app or another service, you would need to adjust the `AzureSecurityConfig` to support `oauth2ResourceServer`. 
 
 When `auth-azure` is active, the `/chat` endpoint expects the user to be authenticated. If you call it without a valid session, you will receive a `401 Unauthorized` or be redirected to the login page.
+
+---
+
+## 5. Secure RAG (Metadata Filtering)
+
+The `secure-rag` profile extends the standard RAG capabilities by adding a security layer that filters documents based on the logged-in user's permissions.
+
+### Dependency on Auth Profiles
+The `secure-rag` profile **must always be used with an authentication profile** (e.g., `auth-azure`). This is because the security filtering logic depends on the identity of the logged-in user. If you attempt to start the application with `secure-rag` but without an `auth-` profile, a startup error will be thrown by the `ProfileValidatorConfig` to prevent unsecured access.
+
+### Preloading Test Data
+To get a feel for how Secure RAG works, you can use the `test-secure-data-loader` profile. This will automatically preload two types of documents into your vector store:
+- **PUBLIC**: Accessible by everyone.
+- **CONFIDENTIAL**: Accessible only by users with the appropriate security level.
+
+### Runtime Filtering vs. Startup Configuration
+You might wonder why the security filter is configured at **runtime** (within the adapter) rather than as a static configuration bean. 
+
+The filtering needs to be dynamic because the security level is determined by the **context of the logged-in user**. Since we want to apply different filters depending on who is asking the question, we must build the filter expression during the request execution. While static configuration is easier to manage, it doesn't allow for the user-specific context required for multi-level document security.
 
 

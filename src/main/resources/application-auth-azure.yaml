@@ -1,7 +1,6 @@
 spring:
   flyway:
     enabled: true
-    locations: classpath:db/migration/azure
   security:
     oauth2:
       client:

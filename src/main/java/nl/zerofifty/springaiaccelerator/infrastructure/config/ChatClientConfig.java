@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.parameters.P;
 
 @Configuration
-@Profile("ollama")
 public class ChatClientConfig {
 
     @Bean
