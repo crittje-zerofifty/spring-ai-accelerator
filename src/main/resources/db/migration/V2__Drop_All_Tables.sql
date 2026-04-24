@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS session CASCADE;
+DROP TABLE IF EXISTS vector_store CASCADE;
+DROP TABLE IF EXISTS spring_ai_chat_memory CASCADE;

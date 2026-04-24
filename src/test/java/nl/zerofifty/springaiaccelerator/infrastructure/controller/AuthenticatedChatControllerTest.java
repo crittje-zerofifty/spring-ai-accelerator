@@ -14,7 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AuthenticatedHistoryChatControllerTest {
+class AuthenticatedChatControllerTest {
 
     @Mock
     private AuthenticatedChatHistoryPort authenticatedChatHistoryPort;
@@ -23,7 +23,7 @@ class AuthenticatedHistoryChatControllerTest {
     private OidcUser oidcUser;
 
     @InjectMocks
-    private AuthenticatedHistoryChatController controller;
+    private AuthenticatedChatController controller;
 
     @Test
     void whenAuthenticatedChat_thenDelegatesToUseCase() {

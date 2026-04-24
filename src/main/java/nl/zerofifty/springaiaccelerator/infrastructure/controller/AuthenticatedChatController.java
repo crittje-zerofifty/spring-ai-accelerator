@@ -1,7 +1,6 @@
 
 package nl.zerofifty.springaiaccelerator.infrastructure.controller;
 
-import jakarta.annotation.Nonnull;
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,21 +11,22 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 /**
- * Controller to prompt with context of history
+ * In case you use authentication but no history, the chatId defaults to 1. However, this value is not relevant for rest
+ * of the process in that case.
  */
 @RestController
 @Profile("auth-azure")
-public class AuthenticatedHistoryChatController {
+public class AuthenticatedChatController {
 
     private final AuthenticatedChatHistoryPort authenticatedChatHistoryPort;
 
-    public AuthenticatedHistoryChatController(AuthenticatedChatHistoryPort authenticatedChatHistoryPort) {
+    public AuthenticatedChatController(AuthenticatedChatHistoryPort authenticatedChatHistoryPort) {
         this.authenticatedChatHistoryPort = authenticatedChatHistoryPort;
     }
 
     @GetMapping("/chat")
     public Flux<String> authenticatedChat(@RequestParam String prompt,
-                                         @RequestParam @Nonnull String chatId,
+                                         @RequestParam(defaultValue = "1") String chatId,
                                          @AuthenticationPrincipal OidcUser user) {
         return authenticatedChatHistoryPort.chat(prompt, chatId, user.getEmail());
     }
