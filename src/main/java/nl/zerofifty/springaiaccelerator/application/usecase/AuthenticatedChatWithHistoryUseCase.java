@@ -1,5 +1,6 @@
 package nl.zerofifty.springaiaccelerator.application.usecase;
 
+import nl.zerofifty.springaiaccelerator.application.annotation.EvaluateQuality;
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;
 import nl.zerofifty.springaiaccelerator.application.port.output.LlmHistoryClientPort;
 import nl.zerofifty.springaiaccelerator.infrastructure.dao.Session;
@@ -24,6 +25,7 @@ public class AuthenticatedChatWithHistoryUseCase implements AuthenticatedChatHis
         this.sessionRepository = sessionRepository;
     }
 
+    @EvaluateQuality
     @Override
     public Flux<String> chat(String prompt, String chatId, String userId) {
         // Your business logic here

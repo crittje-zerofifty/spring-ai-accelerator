@@ -3,6 +3,7 @@ package nl.zerofifty.springaiaccelerator.infrastructure.monitoring;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import org.jspecify.annotations.NonNull;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
@@ -10,7 +11,6 @@ import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
 import org.springframework.ai.chat.model.ChatResponse;
 import reactor.core.publisher.Flux;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +23,7 @@ public class GrafanaMonitoringAdvisor implements StreamAdvisor {
     }
 
     @Override
-    public Flux<ChatClientResponse> adviseStream(ChatClientRequest request, StreamAdvisorChain chain) {
+    public @NonNull Flux<ChatClientResponse> adviseStream(@NonNull ChatClientRequest request, StreamAdvisorChain chain) {
         long start = System.nanoTime();
 
         return chain.nextStream(request)
@@ -66,7 +66,7 @@ public class GrafanaMonitoringAdvisor implements StreamAdvisor {
     }
 
     @Override
-    public String getName() {
+    public @NonNull String getName() {
         return "GrafanaMonitoringAdvisor";
     }
 

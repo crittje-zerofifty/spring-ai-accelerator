@@ -1,5 +1,6 @@
 package nl.zerofifty.springaiaccelerator.application.usecase;
 
+import nl.zerofifty.springaiaccelerator.application.annotation.EvaluateQuality;
 import nl.zerofifty.springaiaccelerator.application.port.input.ChatHistoryPort;
 import nl.zerofifty.springaiaccelerator.application.port.output.LlmHistoryClientPort;
 import org.springframework.context.annotation.Profile;
@@ -16,6 +17,7 @@ public class ChatWithHistoryUseCase implements ChatHistoryPort {
         this.chatHistoryPort = chatHistoryPort;
     }
 
+    @EvaluateQuality
     @Override
     public Flux<String> chat(String prompt, String chatId) {
         // Your business logic here

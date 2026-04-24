@@ -1,5 +1,6 @@
 package nl.zerofifty.springaiaccelerator.application.usecase;
 
+import nl.zerofifty.springaiaccelerator.application.annotation.EvaluateQuality;
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;
 import nl.zerofifty.springaiaccelerator.application.port.output.LlmClientPort;
 import nl.zerofifty.springaiaccelerator.application.port.output.LlmHistoryClientPort;
@@ -30,11 +31,12 @@ public class SecureRagUseCase implements AuthenticatedChatHistoryPort {
         this.llmSecureRagClient = llmSecureRagClient;
     }
 
+    @EvaluateQuality
     @Override
     public Flux<String> chat(String prompt, String chatId, String userId) {
         // Your business logic here
 
-        Optional<UserPermission> userPermissionOptional = userPermissionRepository.findByEmail(userId);
+        Optional<UserPermission> userPermissionOptional = userPermissionRepository.findByEmail("someone.awesome@company.com");
 
         if (userPermissionOptional.isEmpty()) {
             throw new SecurityException("User is not authorized to access documents");
