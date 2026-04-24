@@ -11,7 +11,10 @@ import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvi
 import org.springframework.ai.document.Document;
 import org.springframework.context.annotation.Profile;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,30 +30,39 @@ public class EvaluateQualityAdvisor implements StreamAdvisor {
     }
 
     public @NonNull Flux<ChatClientResponse> adviseStream(@NonNull ChatClientRequest request, StreamAdvisorChain chain) {
+        StringBuilder fullAnswerBuilder = new StringBuilder();
+        final List<Document> retrievedDocs = new ArrayList<>(); // Use array to bypass closure restriction
+
         return chain.nextStream(request)
-                .collectList() // Verzamel alle chunks van de stream
-                .flatMapMany(responses -> {
-                    if (responses.isEmpty()) return Flux.empty();
+                .doOnNext(response -> captureResponseContent(response, fullAnswerBuilder, retrievedDocs))
+                .doOnComplete(() -> evaluateAndPublish(request, fullAnswerBuilder, retrievedDocs));
 
-                    String prompt = request.prompt().getUserMessage().getText();
+    }
 
-                    // 2. Haal de Context op (uit de metadata van de eerste response)
-                    List<Document> docs =
-                            (List<Document>) responses.getFirst().context().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
-                    String contextString = (docs == null || docs.isEmpty())
-                            ? "No context found"
-                            : docs.stream().map(Document::getText).collect(Collectors.joining("\n---\n"));
+    private void captureResponseContent(ChatClientResponse response, StringBuilder fullAnswerBuilder, List<Document> retrievedDocs) {
+        if (response.context().containsKey(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS)) {
+            retrievedDocs.addAll((List<Document>) response.context().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS));
+        }
+        String text = response.chatResponse().getResult().getOutput().getText();
+        if (text != null) {
+            fullAnswerBuilder.append(text);
+        }
+    }
 
-                    String fullAnswer = responses.stream()
-                            .map(res -> res.chatResponse().getResult().getOutput().getText())
-                            .collect(Collectors.joining());
+    private void evaluateAndPublish(ChatClientRequest request, StringBuilder fullAnswerBuilder, List<Document> docs) {
+        String prompt = request.prompt().getUserMessage().getText();
+        String fullAnswer = fullAnswerBuilder.toString();
 
+        String contextString = (docs == null || docs.isEmpty())
+                ? "No context found"
+                : docs.stream().map(Document::getText).collect(Collectors.joining("\n---\n"));
+
+        Mono.fromRunnable(() -> {
                     EvaluationResponse evalResult = evaluateResultAdapter.evaluate(prompt, contextString, fullAnswer);
-
                     publishers.forEach(p -> p.publish(evalResult));
-
-                    return Flux.fromIterable(responses);
-                });
+                })
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe();
     }
 
     @Override

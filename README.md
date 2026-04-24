@@ -103,6 +103,7 @@ This application is built with modularity at its core. You can easily toggle fea
 | `claude` | Configures Anthropic (Claude) as the AI provider. | Using Claude models (requires `ANTHROPIC_API_KEY`). |
 | `elk-monitoring` | Enables logging and monitoring via ELK stack. | For deep log analysis and observability. |
 | `grafana-monitoring` | Enables Micrometer metrics for Grafana. | For real-time performance dashboards. |
+| `eval-testing` | Enables AI Quality Assurance (LLM-as-a-Judge). | To automatically evaluate RAG responses for faithfulness and relevance. |
 
 ### Switching Profiles
 You can switch profiles in your `application.yaml` or via command line:
@@ -222,9 +223,43 @@ To get a feel for how Secure RAG works, you can use the `test-secure-data-loader
 ### Runtime Filtering vs. Startup Configuration
 The filtering needs to be dynamic because the security level is determined by the **context of the logged-in user**. Since we want to apply different filters depending on who is asking the question, we must build the filter expression during the request execution. While static configuration is easier to manage, it doesn't allow for the user-specific context required for multi-level document security.
 
+### Improving Retrieval: Multi-Querying
+A common challenge in RAG is retrieving all relevant documents when a user query covers multiple topics. For example, a query like:
+`What can you tell me about codebase x and i also need some parking policy`
+
+might only return documents for one of the topics if the embedding is skewed. To overcome this, you can use **multi-querying** or query decomposition. This involves using an LLM to break down a complex prompt into simpler search terms.
+
+A recommended system prompt to ensure the LLM handles multi-part questions effectively when context is provided:
+
+```text
+You are a helpful assistant. Use the provided context to answer the user's multi-part question.
+If the context contains information about different topics (like codebase and parking), 
+make sure to address both in your response.
+```
+
+By increasing the `Top-K` retrieved documents and ensuring the system prompt explicitly handles multi-topic context, you can significantly improve the recall and accuracy of your RAG system.
+
 ---
 
-## 6. Database Migrations (Flyway)
+## 6. AI Quality Assurance (eval-testing)
+
+The `eval-testing` profile implements a **LLM-as-a-Judge** pattern to provide automated Quality Assurance for your AI responses.
+
+### How it Works
+When active, the `EvaluateQualityAdvisor` intercepts the LLM response stream. Once the stream is complete, it triggers an asynchronous evaluation process that rates the response on:
+- **Faithfulness**: Is the answer derived ONLY from the provided context?
+- **Relevancy**: Does the answer actually address the user's question?
+
+### Observability Integration
+The evaluation results are not just logged; they are published to your monitoring stack:
+- **Grafana**: Track faithfulness and relevancy scores over time to detect model drift or retrieval issues.
+- **ELK Stack**: Store detailed evaluation reasoning alongside the original prompts and answers for deep-dive forensic analysis.
+
+This "side-car" evaluation ensures that you maintain high response quality without blocking the user-friendly streaming experience.
+
+---
+
+## 7. Database Migrations (Flyway)
 
 In the `auth-azure` and `secure-rag` profiles, we use **Flyway** for database migrations.
 
