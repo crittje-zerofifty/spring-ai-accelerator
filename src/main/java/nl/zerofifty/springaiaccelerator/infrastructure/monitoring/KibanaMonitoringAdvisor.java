@@ -1,5 +1,6 @@
 package nl.zerofifty.springaiaccelerator.infrastructure.monitoring;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClientRequest;
@@ -18,7 +19,7 @@ public class KibanaMonitoringAdvisor implements StreamAdvisor {
     private static final Logger log = LoggerFactory.getLogger(KibanaMonitoringAdvisor.class);
 
     @Override
-    public Flux<ChatClientResponse> adviseStream(ChatClientRequest request, StreamAdvisorChain chain) {
+    public @NonNull Flux<ChatClientResponse> adviseStream(@NonNull ChatClientRequest request, StreamAdvisorChain chain) {
         long start = System.currentTimeMillis();
 
         return chain.nextStream(request)
@@ -43,7 +44,7 @@ public class KibanaMonitoringAdvisor implements StreamAdvisor {
     }
 
     @Override
-    public String getName() {
+    public @NonNull String getName() {
         return "KibanaMonitoringAdvisor";
     }
 

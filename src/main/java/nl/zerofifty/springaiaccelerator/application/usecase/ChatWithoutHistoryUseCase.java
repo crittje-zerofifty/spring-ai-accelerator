@@ -1,6 +1,5 @@
 package nl.zerofifty.springaiaccelerator.application.usecase;
 
-import nl.zerofifty.springaiaccelerator.application.port.input.ChatHistoryPort;
 import nl.zerofifty.springaiaccelerator.application.port.input.ChatPort;
 import nl.zerofifty.springaiaccelerator.application.port.output.LlmClientPort;
 import org.springframework.context.annotation.Profile;

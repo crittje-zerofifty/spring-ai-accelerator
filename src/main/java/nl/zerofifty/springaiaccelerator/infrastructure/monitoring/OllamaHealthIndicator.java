@@ -21,8 +21,6 @@ public class OllamaHealthIndicator implements ReactiveHealthIndicator {
     @Value("${spring.ai.ollama.base-url:http://localhost:11434}")
     private String baseUrl;
 
-    private static final Logger log = LoggerFactory.getLogger(OllamaHealthIndicator.class);
-
     private final WebClient webClient = WebClient.builder().build();
     private final AtomicInteger ollamaStatus = new AtomicInteger(0);
 
