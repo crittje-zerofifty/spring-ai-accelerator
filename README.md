@@ -290,7 +290,20 @@ This "side-car" evaluation ensures that you maintain high response quality witho
 
 ---
 
-## 7. Database Migrations (Flyway)
+## 8. AI Agent Configurations
+
+To ensure consistency and adherence to our architectural standards when using AI coding assistants, this project 
+includes dedicated rule files for various AI agents. These files define the project's core principles, layer structure, and development workflow.
+
+- **`.clinerules`**: Configuration for [Cline](https://cline.bot/).
+- **`.cursorrules`**: Configuration for [Cursor](https://cursor.com/). 
+- **`claude.md`**: Configuration for [Claude](https://claude.ai/) or other LLMs.
+
+By maintaining these files, we ensure that any AI assistant—regardless of the platform—operates with a shared understanding of the **Spring AI Accelerator's** high-quality standards.
+
+---
+
+## 9. Database Migrations (Flyway)
 
 In the `auth-azure`, `auth-aws` and `secure-rag` profiles, we use **Flyway** for database migrations.
 
