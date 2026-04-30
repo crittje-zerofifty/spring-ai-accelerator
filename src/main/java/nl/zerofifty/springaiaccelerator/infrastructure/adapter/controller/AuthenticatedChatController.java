@@ -1,5 +1,5 @@
 
-package nl.zerofifty.springaiaccelerator.infrastructure.controller;
+package nl.zerofifty.springaiaccelerator.infrastructure.adapter.controller;
 
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;
 import org.springframework.context.annotation.Profile;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
  * of the process in that case.
  */
 @RestController
-@Profile("auth-azure")
+@Profile({ "auth-azure", "auth-aws" })
 public class AuthenticatedChatController {
 
     private final AuthenticatedChatHistoryPort authenticatedChatHistoryPort;

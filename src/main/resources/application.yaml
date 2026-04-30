@@ -8,6 +8,8 @@ spring:
         - jdbc
       auth-azure:
         - jdbc
+      auth-aws:
+        - jdbc
       secure-rag:
         - rag
   ai:

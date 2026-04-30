@@ -1,6 +1,7 @@
 package nl.zerofifty.springaiaccelerator.infrastructure.controller;
 
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;
+import nl.zerofifty.springaiaccelerator.infrastructure.adapter.controller.AuthenticatedChatController;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

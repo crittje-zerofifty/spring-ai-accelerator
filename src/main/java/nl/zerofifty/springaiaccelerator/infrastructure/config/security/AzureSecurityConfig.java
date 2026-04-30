@@ -7,7 +7,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
-@Profile("auth-azure")
+@Profile({"auth-azure", "auth-aws"})
 @Configuration
 public class AzureSecurityConfig {
 
