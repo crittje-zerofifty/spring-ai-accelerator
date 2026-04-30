@@ -95,6 +95,7 @@ This application is built with modularity at its core. You can easily toggle fea
 | `no-history` | Standard chat without memory. | Simple stateless requests. |
 | `history` | Enables chat history (JDBC based). | When you need the LLM to remember previous context. |
 | `auth-azure` | Enables Azure AD OAuth2 authentication. | Production or secured environments requiring user login. |
+| `auth-aws` | Enables AWS Cognito OAuth2 authentication. | Production or secured environments requiring user login. |
 | `rag` | Enables Retrieval Augmented Generation. | When you want the LLM to use your own data/documents. |
 | `secure-rag` | Enables Secure RAG with metadata filtering. | When you need to restrict document access based on user security levels. |
 | `test-secure-data-loader` | Preloads sample secure data for testing. | To quickly test and understand the Secure RAG process. |
@@ -175,17 +176,19 @@ If you are moving away from `localhost` to a hosted monitoring stack (e.g., Elas
 
 ---
 
-## 4. Azure OAuth2 Configuration
+## 4. MultiCloud OAuth2 Configuration
+
+### Azure
 
 To use Azure AD for authentication, you need to register an application in the Azure Portal and configure the following.
 
-### Azure Setup Requirements
+#### Azure Setup Requirements
 1. **App Registration**: Create a new registration in "App registrations".
 2. **Redirect URI**: Set it to `http://localhost:8080/login/oauth2/code/azure`.
 3. **Client Secret**: Generate a new client secret.
 4. **API Permissions**: Ensure `openid`, `profile`, and `email` are granted.
 
-### Configuration
+#### Configuration
 Use the `auth-azure` profile and provide the following environment variables:
 
 - `AZURE_CLIENT_ID`: Your Azure Application (client) ID.
@@ -194,10 +197,38 @@ Use the `auth-azure` profile and provide the following environment variables:
 The issuer URI is pre-configured in `application-auth-azure.yaml`, but you may need to update the Tenant ID in the URL:
 `https://login.microsoftonline.com/{your-tenant-id}/v2.0`
 
-### How it works in practice
+### AWS (Cognito)
 
-#### For Web Users
-When a user accesses the service, they will be redirected to the Microsoft Login page. After successful authentication, a session is created. The user's email is extracted from the OIDC token and used to sandbox their chat history.
+To use AWS Cognito for authentication, you need to configure a User Pool and an App Client.
+
+#### AWS Setup Requirements
+1.  **App Client**: Create a new App Client in your User Pool.
+2.  **Redirect URI**: Set it to `http://localhost:8080/login/oauth2/code/cognito`.
+3.  **Allowed OAuth Flows**: Must include **Authorization code grant**.
+4.  **Allowed OAuth Scopes**: Ensure `openid`, `profile`, and `email` are selected.
+5.  **Attribute Read Permissions**: Ensure the App Client has read access to the `email` attribute.
+
+#### Configuration
+Use the `auth-aws` profile and provide the following environment variables (or update `application-auth-aws.yml`):
+
+- `COGNITO_CLIENT_ID`: Your Cognito App Client ID.
+- `COGNITO_CLIENT_SECRET`: Your Cognito App Client Secret.
+
+The `issuer-uri` in `application-auth-aws.yml` should point to your Cognito User Pool:
+`https://cognito-idp.{region}.amazonaws.com/{user-pool-id}`
+
+#### Why OAuth2 over Native AWS IAM/ARN?
+While AWS offers powerful native identity features like **IAM roles** and **ARNs**, this project explicitly uses **OAuth2/OIDC**. This choice ensures the Spring AI Accelerator remains **cloud-agnostic and consistent**. By using a standard protocol, the implementation details of "who the user is" remain the same whether you are on Azure, AWS, or an on-premise Keycloak instance.
+
+#### Importance of Scopes and Attributes
+During the setup of this project, we encountered specific requirements that highlight the importance of correct configuration:
+- **User Name Attribute**: We configure `user-name-attribute: email`. This is critical for our **Secure RAG** implementation because the document permissions in our example database are mapped to **email addresses**. By using email as the primary identifier, we can seamlessly filter vector search results based on the logged-in user's identity.
+- **Grant Types**: Ensure "Authorization code grant" is used. "Client Credentials" is for machine-to-machine and won't provide the user-specific scopes (like email) needed for personalized RAG.
+
+#### How it works in practice
+
+##### For Web Users
+When a user accesses the service, they will be redirected to the configured Identity Provider (Microsoft or Cognito) login page. After successful authentication, a session is created. The user's email is extracted from the OIDC token and used to sandbox their chat history.
 
 #### For REST/API Calls
 Currently, the service is configured for **OAuth2 Login** (Authorization Code Flow). 
@@ -213,7 +244,7 @@ When `auth-azure` is active, the `/chat` endpoint expects the user to be authent
 The `secure-rag` profile extends the standard RAG capabilities by adding a security layer that filters documents based on the logged-in user's permissions.
 
 ### Dependency on Auth Profiles
-The `secure-rag` profile **must always be used with an authentication profile** (e.g., `auth-azure`). This is because the security filtering logic depends on the identity of the logged-in user. If you attempt to start the application with `secure-rag` but without an `auth-` profile, a startup error will be thrown by the `ProfileValidatorConfig` to prevent unsecured access.
+The `secure-rag` profile **must always be used with an authentication profile** (e.g., `auth-azure` or `auth-aws`). This is because the security filtering logic depends on the identity of the logged-in user. If you attempt to start the application with `secure-rag` but without an `auth-` profile, a startup error will be thrown by the `ProfileValidatorConfig` to prevent unsecured access.
 
 ### Preloading Test Data
 To get a feel for how Secure RAG works, you can use the `test-secure-data-loader` profile. This will automatically preload two types of documents into your vector store:
@@ -261,7 +292,7 @@ This "side-car" evaluation ensures that you maintain high response quality witho
 
 ## 7. Database Migrations (Flyway)
 
-In the `auth-azure` and `secure-rag` profiles, we use **Flyway** for database migrations.
+In the `auth-azure`, `auth-aws` and `secure-rag` profiles, we use **Flyway** for database migrations.
 
 ### Why Flyway?
 While Spring Boot's auto-DDL (`spring.jpa.hibernate.ddl-auto: update`) is convenient for quick prototyping, it is generally discouraged in **production-like environments**. 

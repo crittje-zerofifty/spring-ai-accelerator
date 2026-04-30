@@ -1,0 +1,21 @@
+spring:
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          cognito:
+            client-id: ${AWS_COGNITO_CLIENT_ID}
+            client-secret: ${AWS_COGNITO_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/cognito"
+            client-authentication-method: client_secret_post
+            client-name: ZeroFifty IT Spring AI Accelerator
+        provider:
+          cognito:
+            issuer-uri: https://cognito-idp.eu-north-1.amazonaws.com/${AWS_COGNITO_USER_POOL_ID}
+            user-name-attribute: email

@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
  * of the process in that case.
  */
 @RestController
-@Profile("auth-azure")
+@Profile({ "auth-azure", "auth-aws" })
 public class AuthenticatedChatController {
 
     private final AuthenticatedChatHistoryPort authenticatedChatHistoryPort;
