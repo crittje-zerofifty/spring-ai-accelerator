@@ -1,5 +1,5 @@
 
-package nl.zerofifty.springaiaccelerator.infrastructure.controller;
+package nl.zerofifty.springaiaccelerator.infrastructure.adapter.controller;
 
 import jakarta.annotation.Nonnull;
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;

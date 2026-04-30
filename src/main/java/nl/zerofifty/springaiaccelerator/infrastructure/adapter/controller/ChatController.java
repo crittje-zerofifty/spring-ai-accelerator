@@ -1,5 +1,5 @@
 
-package nl.zerofifty.springaiaccelerator.infrastructure.controller;
+package nl.zerofifty.springaiaccelerator.infrastructure.adapter.controller;
 
 import nl.zerofifty.springaiaccelerator.application.port.input.ChatPort;
 import org.springframework.ai.chat.client.ChatClient;
