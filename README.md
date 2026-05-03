@@ -1,5 +1,7 @@
 # Spring AI Accelerator
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/crittje-zerofifty/spring-ai-accelerator/tree/main.svg?style=svg&circle-token=CCIPRJ_q9Bocw8Sj2CV79YDpEWkZ_47d7f13ad0832ca4ec1dea898d50c271623f9a71)](https://dl.circleci.com/status-badge/redirect/gh/crittje-zerofifty/spring-ai-accelerator/tree/main)
+
 In the rapidly evolving AI landscape, the vast majority of resources and boilerplates are tailored for Python 
 (LangChain) or JavaScript. While great for prototyping, these often fall short when integrated into **Enterprise 
 Java ecosystems**.
@@ -254,21 +256,22 @@ To get a feel for how Secure RAG works, you can use the `test-secure-data-loader
 ### Runtime Filtering vs. Startup Configuration
 The filtering needs to be dynamic because the security level is determined by the **context of the logged-in user**. Since we want to apply different filters depending on who is asking the question, we must build the filter expression during the request execution. While static configuration is easier to manage, it doesn't allow for the user-specific context required for multi-level document security.
 
-### Improving Retrieval: Multi-Querying
+### Improving Retrieval: Multi-Querying (Query Expansion)
 A common challenge in RAG is retrieving all relevant documents when a user query covers multiple topics. For example, a query like:
 `What can you tell me about codebase x and i also need some parking policy`
 
-might only return documents for one of the topics if the embedding is skewed. To overcome this, you can use **multi-querying** or query decomposition. This involves using an LLM to break down a complex prompt into simpler search terms.
+might only return documents for one of the topics if the embedding is skewed. To overcome this, you can use the `query-expansion` profile.
 
-A recommended system prompt to ensure the LLM handles multi-part questions effectively when context is provided:
+The `query-expansion` profile enables the `QueryExpansionAdvisor`. This advisor:
+1.  Takes the original user question.
+2.  Uses an LLM to generate multiple alternative versions of the question (Multi-Querying).
+3.  Performs a similarity search for *each* generated question.
+4.  Combines and deduplicates the retrieved documents.
+5.  Passes the enriched context to the final prompt.
+6.  **Tip**: Use a cheaper/faster model (like GPT-3.5 or Claude Haiku) for query expansion to keep latency and costs low, while using a more powerful model for the final response.
 
-```text
-You are a helpful assistant. Use the provided context to answer the user's multi-part question.
-If the context contains information about different topics (like codebase and parking), 
-make sure to address both in your response.
-```
-
-By increasing the `Top-K` retrieved documents and ensuring the system prompt explicitly handles multi-topic context, you can significantly improve the recall and accuracy of your RAG system.
+To use it, activate the `query-expansion` profile along with a RAG profile:
+`--spring.profiles.active=rag,query-expansion,openai`
 
 ---
 

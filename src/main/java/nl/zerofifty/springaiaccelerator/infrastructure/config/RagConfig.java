@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-@Profile("rag")
+@Profile("rag & !query-expansion")
 @Configuration
 public class RagConfig {
 
