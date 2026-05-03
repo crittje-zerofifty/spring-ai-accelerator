@@ -2,6 +2,18 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/crittje-zerofifty/spring-ai-accelerator/tree/main.svg?style=svg&circle-token=CCIPRJ_q9Bocw8Sj2CV79YDpEWkZ_47d7f13ad0832ca4ec1dea898d50c271623f9a71)](https://dl.circleci.com/status-badge/redirect/gh/crittje-zerofifty/spring-ai-accelerator/tree/main)
 
+## Table of Contents
+- [Why this project?](#why-this-project)
+- [1. Ollama Installation](#1-ollama-installation)
+- [2. Architecture: Hexagonal & DDD](#2-architecture-hexagonal--ddd)
+- [3. Modularity & Profiles](#3-modularity--profiles)
+- [4. Monitoring Environments](#3-monitoring-environments)
+- [5. MultiCloud OAuth2 Configuration](#4-multicloud-oauth2-configuration)
+- [6. Secure RAG (Metadata Filtering)](#5-secure-rag-metadata-filtering)
+- [7. AI Quality Assurance (eval-testing)](#6-ai-quality-assurance-eval-testing)
+- [8. AI Agent Configurations](#8-ai-agent-configurations)
+- [9. Database Migrations (Flyway)](#9-database-migrations-flyway)
+
 In the rapidly evolving AI landscape, the vast majority of resources and boilerplates are tailored for Python 
 (LangChain) or JavaScript. While great for prototyping, these often fall short when integrated into **Enterprise 
 Java ecosystems**.
