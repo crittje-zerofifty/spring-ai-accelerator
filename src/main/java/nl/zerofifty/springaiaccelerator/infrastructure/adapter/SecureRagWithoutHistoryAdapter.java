@@ -19,10 +19,17 @@ public class SecureRagWithoutHistoryAdapter implements LlmSecureRagClient {
 
     private final ChatClient chatClient;
     private final List<StreamAdvisor> advisors;
+    private final String systemPrompt;
 
     public SecureRagWithoutHistoryAdapter(ChatClient chatClient, List<StreamAdvisor> advisors) {
         this.chatClient = chatClient;
         this.advisors = advisors;
+        systemPrompt = """
+                        You are a helpful assistant. If you can't find the answer because you can't find it
+                        in the docs provided you answer 'Sorry I cannot help you with that.'
+                        Do not give any context about information you do no things about.
+                        Just be short if you can't answer the question.
+                        """;
     }
 
     @Override
@@ -32,12 +39,7 @@ public class SecureRagWithoutHistoryAdapter implements LlmSecureRagClient {
                     advisors.forEach(a::advisors);
                     a.param(QuestionAnswerAdvisor.FILTER_EXPRESSION, getFilter(securityLevel));
                 })
-                .system("""
-                        You are a helpful assistant. If you can't find the answer because you can't find it
-                        in the docs provided you answer 'Sorry I cannot help you with that.'
-                        Do not give any context about information you do no things about.
-                        Just be short if you can't answer the question.
-                        """)
+                .system(systemPrompt)
                 .user(prompt)
                 .stream()
                 .content();

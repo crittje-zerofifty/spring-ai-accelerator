@@ -31,7 +31,7 @@ public class EvaluateQualityAdvisor implements StreamAdvisor {
 
     public @NonNull Flux<ChatClientResponse> adviseStream(@NonNull ChatClientRequest request, StreamAdvisorChain chain) {
         StringBuilder fullAnswerBuilder = new StringBuilder();
-        final List<Document> retrievedDocs = new ArrayList<>(); // Use array to bypass closure restriction
+        final List<Document> retrievedDocs = new ArrayList<>();
 
         return chain.nextStream(request)
                 .doOnNext(response -> captureResponseContent(response, fullAnswerBuilder, retrievedDocs))
