@@ -9,7 +9,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Profile({"auth-azure", "auth-aws"})
 @Configuration
-public class AzureSecurityConfig {
+public class OAuthSecurityConfig {
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
