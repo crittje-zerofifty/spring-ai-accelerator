@@ -1,14 +1,14 @@
-management:
-  endpoints:
-    web:
-      exposure:
-        include: prometheus, health, info
-  endpoint:
-    health:
-      show-components: always
-      show-details: always
-    prometheus:
-      enabled: true
-  metrics:
-    tags:
-      application: spring-ai-accelerator
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: prometheus, health, info
+#  endpoint:
+#    health:
+#      show-components: always
+#      show-details: always
+#    prometheus:
+#      enabled: true
+#  metrics:
+#    tags:
+#      application: spring-ai-accelerator
