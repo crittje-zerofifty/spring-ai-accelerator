@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -41,12 +43,17 @@ class LlmWithoutHistoryAdapterTest {
         var promptSpec = mock(ChatClient.ChatClientRequestSpec.class);
         var advisorSpecCaptor = ArgumentCaptor.forClass(Consumer.class);
         var streamResponseSpec = mock(ChatClient.StreamResponseSpec.class);
+        var chatResponse = mock(ChatResponse.class);
+        var generation = mock(Generation.class);
+        var assistantMessage = new org.springframework.ai.chat.messages.AssistantMessage("AI response");
 
         when(chatClient.prompt()).thenReturn(promptSpec);
         when(promptSpec.user(prompt)).thenReturn(promptSpec);
         when(promptSpec.advisors(any(Consumer.class))).thenReturn(promptSpec);
         when(promptSpec.stream()).thenReturn(streamResponseSpec);
-        when(streamResponseSpec.content()).thenReturn(Flux.just("AI response"));
+        when(streamResponseSpec.chatResponse()).thenReturn(Flux.just(chatResponse));
+        when(chatResponse.getResult()).thenReturn(generation);
+        when(generation.getOutput()).thenReturn(assistantMessage);
 
         Flux<String> result = adapter.call(prompt);
 

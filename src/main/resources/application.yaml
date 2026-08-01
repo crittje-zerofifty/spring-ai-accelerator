@@ -15,6 +15,39 @@ spring:
   ai:
     openai:
       api-key: overwritten-by-env-var-if-open-ai-profile-is-active
+    chat:
+      observations:
+        log-prompt: true
   flyway:
     enabled: false
     baseline-on-migrate: true
+
+management:
+  metrics:
+    tags:
+      application: spring-ai-accelerator
+      # useful tags can be the application environment for example
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+     export:
+       otlp:
+        endpoint: http://localhost:4318/v1/logs
+  tracing:
+    sampling:
+      probability: 1.0 # Forceer 100% traces voor debugging
+
+logging:
+  level:
+    root: INFO

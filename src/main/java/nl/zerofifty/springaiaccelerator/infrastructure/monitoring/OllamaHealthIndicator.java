@@ -1,8 +1,7 @@
 package nl.zerofifty.springaiaccelerator.infrastructure.monitoring;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.ReactiveHealthIndicator;
@@ -29,7 +28,7 @@ public class OllamaHealthIndicator implements ReactiveHealthIndicator {
     }
 
     @Override
-    public Mono<Health> health() {
+    public @NonNull Mono<Health> health() {
         return webClient
                 .get()
                 .uri(baseUrl + "/api/tags")

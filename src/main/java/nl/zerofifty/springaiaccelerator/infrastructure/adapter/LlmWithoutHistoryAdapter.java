@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Profile("no-history")
@@ -27,6 +28,8 @@ public class LlmWithoutHistoryAdapter implements LlmClientPort {
                 .advisors(a -> advisors.forEach(a::advisors))
                 .user(prompt)
                 .stream()
-                .content();
+                .chatResponse()
+                .mapNotNull(response -> Objects.requireNonNull(response.getResult()).getOutput().getText())
+                .defaultIfEmpty("");
     }
 }

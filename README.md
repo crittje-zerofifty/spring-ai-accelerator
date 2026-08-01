@@ -31,7 +31,8 @@ first-class support for **Ollama** and **PgVector**, this project enables high-p
 run entirely on local or sovereign soil.
 
 3. **Enterprise Observability**: Transitioning from a developer's laptop to production requires monitoring. It contains 
-pre-integrated ELK (Logging) and Grafana (Metrics) so you can track token usage, latency, and model performance from day one.
+pre-integrated Grafana (Metrics, Traces, Logs) and ELK (via OTLP) so you can track token usage, latency, and model performance from day one.
+All LLM Adapters (`LlmWithHistoryAdapter` and `LlmWithoutHistoryAdapter`) come with out-of-the-box monitoring via OpenTelemetry.
 
 4. **Architectural Flexibility**: Using a profile-based, provider-agnostic design, you can switch between Claude, 
 OpenAI, 
@@ -116,17 +117,15 @@ This application is built with modularity at its core. You can easily toggle fea
 | `ollama` | Configures Ollama as the AI provider. | Local development with Ollama. |
 | `openai` | Configures OpenAI as the AI provider. | Using OpenAI models (requires `OPENAI_API_KEY`). |
 | `claude` | Configures Anthropic (Claude) as the AI provider. | Using Claude models (requires `ANTHROPIC_API_KEY`). |
-| `elk-monitoring` | Enables logging and monitoring via ELK stack. | For deep log analysis and observability. |
-| `grafana-monitoring` | Enables Micrometer metrics for Grafana. | For real-time performance dashboards. |
-| `eval-testing` | Enables AI Quality Assurance (LLM-as-a-Judge). | To automatically evaluate RAG responses for faithfulness and relevance. |
+| `eval-testing` | Enables AI Quality Assurance (LLM-as-a-Judge). | To automatically evaluate RAG responses for faithfulness and relevance. Results are published via Micrometer Observations. |
 
 ### Switching Profiles
 You can switch profiles in your `application.yaml` or via command line:
 ```bash
-./gradlew bootRun --args='--spring.profiles.active=history,ollama,grafana-monitoring'
+./gradlew bootRun --args='--spring.profiles.active=history,ollama,eval-testing'
 ```
 
-This example builds an application with **history** enabled. In addition, it uses **Ollama** as the AI provider and **Grafana** for monitoring.
+This example builds an application with **history** enabled. In addition, it uses **Ollama** as the AI provider.
 
 When using `openai` or `claude` profiles, ensure you have the corresponding API key set as an environment variable:
 - For `openai`: `OPENAI_API_KEY`
@@ -138,55 +137,46 @@ When the application is running, you can access the interactive API documentatio
 
 ---
 
-## 3. Monitoring Environments
+## 4. Monitoring Environments
 
 Setup your monitoring stack locally using the provided Docker Compose files in the `/monitoring` directory.
 
-### ELK vs. Grafana: Which one to use?
+### OpenTelemetry & Micrometer Observation API
 
-While both provide observability, they serve different purposes in this project:
+The project uses the **Micrometer Observation API** for vendor-neutral instrumentation. This means your application code doesn't know about specific monitoring tools like Grafana or ELK. Data is exported via the **OpenTelemetry (OTLP) protocol**.
 
+The `LlmWithHistoryAdapter` and `LlmWithoutHistoryAdapter` are instrumented to provide out-of-the-box monitoring of LLM interactions, including token usage and latency, which are then exported via OpenTelemetry.
+
+- **Grafana Stack (Prometheus, Tempo, Loki)**: 
+  - **Focus**: Unified Observability (Metrics, Traces, Logs). 
+  - **Usage**: Best for real-time dashboards and distributed tracing. Traces are automatically correlated with logs.
 - **ELK Stack (Elasticsearch, Logstash, Kibana)**: 
-  - **Focus**: Log Analysis. 
-  - **Usage**: Use this when you need to search through high-volume logs, trace specific AI prompts, or debug complex errors. It captures the full context of what is happening in the application.
-- **Grafana & Prometheus**: 
-  - **Focus**: Metrics and Performance. 
-  - **Usage**: Use this for real-time dashboards showing system health, request latency, and token usage. It’s better for seeing "at a glance" how the system is performing rather than digging into individual log lines.
+  - **Focus**: Log Analysis and Search. 
+  - **Usage**: Use this when you need deep search capabilities across your logs. ELK can also receive OTLP data.
+
+### Unified Monitoring (Grafana)
+1. Start the services:
+   ```bash
+   docker-compose -f monitoring/docker-compose-accelerator-grafana-monitoring.yml up -d
+   ```
+2. The application automatically exports data via OTLP to `http://localhost:4318`.
+3. **Access Dashboards**:
+   - **Grafana**: [http://localhost:3000](http://localhost:3000) (Default login: `admin` / `admin`).
 
 ### ELK Stack
 1. Start the services:
    ```bash
    docker-compose -f monitoring/docker-compose-accelerator-elk-monitoring.yml up -d
    ```
-2. Run the app with the profile: `elk-monitoring`.
-3. **Access Kibana**: Open [http://localhost:5601](http://localhost:5601) in your browser.
-   - Go to **Management > Stack Management > Index Patterns**.
-   - Create an index pattern (e.g., `spring-ai-logs-*`) to start viewing logs in **Discover**.
-
-### Grafana & Prometheus
-1. Start the services:
-   ```bash
-   docker-compose -f monitoring/docker-compose-accelerator-grafana-monitoring.yml up -d
-   ```
-2. Run the app with the profile: `grafana-monitoring`.
-3. **Access Dashboards**:
-   - **Grafana**: [http://localhost:3000](http://localhost:3000) (Default login: `admin` / `admin`).
-   - **Prometheus**: [http://localhost:9090](http://localhost:9090).
-4. **Setup Grafana**:
-   - Add Prometheus as a Data Source: `http://prometheus:9090`.
-   - Import dashboards (e.g., Spring Boot Observability dashboards).
+2. **Access Kibana**: Open [http://localhost:5601](http://localhost:5601) in your browser.
 
 ### Configuration for Hosted (Non-Local) Environments
 
 If you are moving away from `localhost` to a hosted monitoring stack (e.g., Elastic Cloud, Managed Grafana, or a central company server), you need to update the connection points:
 
-#### 1. Hosted ELK
-- **Logstash Destination**: Update `src/main/resources/logback-spring.xml`. Change `<destination>localhost:5044</destination>` to your hosted Logstash endpoint.
-- **Authentication**: If your hosted Elasticsearch requires authentication, update `application-elk-monitoring.yaml` with the appropriate `spring.elasticsearch.username` and `spring.elasticsearch.password`.
-
-#### 2. Hosted Grafana/Prometheus
-- **Prometheus Scrape Config**: In your hosted Prometheus configuration, ensure it can reach your application's actuator endpoint (e.g., `http://your-app-host:8080/actuator/prometheus`).
-- **Grafana Data Source**: In your hosted Grafana, point the Prometheus data source to your hosted Prometheus URL.
+#### 1. Hosted Monitoring
+- **OTLP Destination**: Update `src/main/resources/application.yaml`. Change the OTLP endpoints to your hosted collector's URL.
+- **Authentication**: If your hosted collector requires authentication (e.g., via headers), you may need to add additional OTEL configuration.
 
 ---
 

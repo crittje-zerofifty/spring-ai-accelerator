@@ -30,10 +30,6 @@ ext {
 }
 
 dependencies {
-    // Monitoring with ELK
-    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
-    // Monitoring with Grafana/Prometheus
-    implementation 'io.micrometer:micrometer-registry-prometheus'
     // Basic Spring boot
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
@@ -49,6 +45,10 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-vector-store-advisor'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:1.32.0-alpha'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
