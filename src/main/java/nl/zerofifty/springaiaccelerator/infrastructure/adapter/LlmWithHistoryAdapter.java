@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Profile({"history", "auth-azure"})
@@ -41,12 +42,8 @@ public class LlmWithHistoryAdapter implements LlmHistoryClientPort {
 
                 .stream()
                 .chatResponse()
-                .map(response -> {
-                    // Hier worden de tokens in de metadata meegegeven in de laatste chunk.
-                    // Door de ChatResponse te behouden, kan de Observation dit meten.
-                    String content = response.getResult().getOutput().getText();
-                    return content != null ? content : "";
-                }).doOnSubscribe(s -> chatObservation.start())
+                .mapNotNull(response -> Objects.requireNonNull(response.getResult()).getOutput().getText())
+                .doOnSubscribe(s -> chatObservation.start())
                 .doOnComplete(chatObservation::stop)
                 .doOnError(chatObservation::error);
     }

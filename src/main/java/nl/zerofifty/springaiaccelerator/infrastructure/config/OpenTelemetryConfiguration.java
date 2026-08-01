@@ -22,20 +22,6 @@ import java.util.List;
 public class OpenTelemetryConfiguration {
 
     @Bean
-    ObservationFilter chatObservationFilter() {
-        return (context) -> {
-            if (context.getName().startsWith("spring.ai.chat.client") || context.getName().startsWith("gen_ai")) {
-                // Probeer chatId uit MDC te halen (voor logs/synchronous traces)
-                String chatId = MDC.get("chatId");
-                if (chatId != null) {
-                    context.addHighCardinalityKeyValue(KeyValue.of("app.chat.id", chatId));
-                }
-            }
-            return context;
-        };
-    }
-
-    @Bean
     OpenTelemetryServerRequestObservationConvention openTelemetryServerRequestObservationConvention() {
         return new OpenTelemetryServerRequestObservationConvention();
     }

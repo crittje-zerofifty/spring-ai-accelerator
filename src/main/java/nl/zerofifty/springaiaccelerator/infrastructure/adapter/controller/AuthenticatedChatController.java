@@ -29,9 +29,7 @@ public class AuthenticatedChatController {
     public Flux<String> authenticatedChat(@RequestParam String prompt,
                                          @RequestParam(defaultValue = "1") String chatId,
                                          @AuthenticationPrincipal OidcUser user) {
-        return authenticatedChatHistoryPort.chat(prompt, chatId, user.getEmail())
-                .contextWrite(Context.of("gen_ai.request.user_id", user.getIdToken().getTokenValue())); // Value
-        // chosen for demo purposes. Pick one that suits your application best.
+        return authenticatedChatHistoryPort.chat(prompt, chatId, user.getEmail());
     }
 
 }

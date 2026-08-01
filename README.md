@@ -32,6 +32,7 @@ run entirely on local or sovereign soil.
 
 3. **Enterprise Observability**: Transitioning from a developer's laptop to production requires monitoring. It contains 
 pre-integrated Grafana (Metrics, Traces, Logs) and ELK (via OTLP) so you can track token usage, latency, and model performance from day one.
+All LLM Adapters (`LlmWithHistoryAdapter` and `LlmWithoutHistoryAdapter`) come with out-of-the-box monitoring via OpenTelemetry.
 
 4. **Architectural Flexibility**: Using a profile-based, provider-agnostic design, you can switch between Claude, 
 OpenAI, 
@@ -143,6 +144,8 @@ Setup your monitoring stack locally using the provided Docker Compose files in t
 ### OpenTelemetry & Micrometer Observation API
 
 The project uses the **Micrometer Observation API** for vendor-neutral instrumentation. This means your application code doesn't know about specific monitoring tools like Grafana or ELK. Data is exported via the **OpenTelemetry (OTLP) protocol**.
+
+The `LlmWithHistoryAdapter` and `LlmWithoutHistoryAdapter` are instrumented to provide out-of-the-box monitoring of LLM interactions, including token usage and latency, which are then exported via OpenTelemetry.
 
 - **Grafana Stack (Prometheus, Tempo, Loki)**: 
   - **Focus**: Unified Observability (Metrics, Traces, Logs). 
