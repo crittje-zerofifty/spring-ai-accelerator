@@ -2,7 +2,7 @@ name: grafana-monitoring
 services:
   grafana:
     image: 'grafana/otel-lgtm:latest'
-    container_name: grafana
+    container_name: grafana-lgtm-accelerator
     ports:
       - "3000:3000" # to access the Grafana UI
       - "4317:4317"

@@ -1,13 +1,13 @@
 
 package nl.zerofifty.springaiaccelerator.infrastructure.adapter.controller;
-
+ 
 import nl.zerofifty.springaiaccelerator.application.port.input.ChatPort;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import reactor.util.context.Context;
 
 /**
  * Controller to prompt without context of history. Each request and response follows the fire and forget principle

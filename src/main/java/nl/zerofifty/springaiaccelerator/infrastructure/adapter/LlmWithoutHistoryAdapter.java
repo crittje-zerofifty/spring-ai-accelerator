@@ -27,6 +27,9 @@ public class LlmWithoutHistoryAdapter implements LlmClientPort {
                 .advisors(a -> advisors.forEach(a::advisors))
                 .user(prompt)
                 .stream()
-                .content();
-    }
+                .chatResponse() // Gebruik chatResponse() in plaats van content()
+                .map(response -> {
+                    String text = response.getResult().getOutput().getText();
+                    return text != null ? text : "";
+                });    }
 }

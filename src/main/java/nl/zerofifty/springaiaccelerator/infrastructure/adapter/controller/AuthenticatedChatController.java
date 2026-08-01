@@ -1,6 +1,6 @@
 
 package nl.zerofifty.springaiaccelerator.infrastructure.adapter.controller;
-
+ 
 import nl.zerofifty.springaiaccelerator.application.port.input.AuthenticatedChatHistoryPort;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import reactor.util.context.Context;
 
 /**
  * In case you use authentication but no history, the chatId defaults to 1. However, this value is not relevant for rest
@@ -28,7 +29,9 @@ public class AuthenticatedChatController {
     public Flux<String> authenticatedChat(@RequestParam String prompt,
                                          @RequestParam(defaultValue = "1") String chatId,
                                          @AuthenticationPrincipal OidcUser user) {
-        return authenticatedChatHistoryPort.chat(prompt, chatId, user.getEmail());
+        return authenticatedChatHistoryPort.chat(prompt, chatId, user.getEmail())
+                .contextWrite(Context.of("gen_ai.request.user_id", user.getIdToken().getTokenValue())); // Value
+        // chosen for demo purposes. Pick one that suits your application best.
     }
 
 }
