@@ -29,8 +29,7 @@ public class HistoryChatController {
     @GetMapping("/chat")
     public Flux<String> chat(@RequestParam String prompt,
                             @RequestParam @Nonnull String chatId) {
-        return chatHistoryPort.chat(prompt, chatId)
-                .contextWrite(Context.of("gen_ai.request.chat_id", chatId));
+        return chatHistoryPort.chat(prompt, chatId);
     }
 
 }
