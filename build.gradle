@@ -43,6 +43,7 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-starter-model-anthropic'
     implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc'
     implementation 'org.springframework.ai:spring-ai-vector-store-advisor'
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
