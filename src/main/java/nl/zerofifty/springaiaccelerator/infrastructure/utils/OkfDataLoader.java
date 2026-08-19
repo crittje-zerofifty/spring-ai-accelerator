@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 @Component
 @Profile("okf")
 public class OkfDataLoader {

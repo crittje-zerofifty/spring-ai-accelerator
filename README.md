@@ -7,10 +7,10 @@
 - [1. Ollama Installation](#1-ollama-installation)
 - [2. Architecture: Hexagonal & DDD](#2-architecture-hexagonal--ddd)
 - [3. Modularity & Profiles](#3-modularity--profiles)
-- [4. Monitoring Environments](#3-monitoring-environments)
-- [5. MultiCloud OAuth2 Configuration](#4-multicloud-oauth2-configuration)
-- [6. Secure RAG - Metadata Filtering - Query Expansion](#5-secure-rag-metadata-filtering---query-expansion)
-- [7. AI Quality Assurance (LLM as-a-Judge)](#6-ai-quality-assurance-eval-testing)
+- [4. Monitoring Environments](#4-monitoring-environments)
+- [5. MultiCloud OAuth2 Configuration](#5-multicloud-oauth2-configuration)
+- [6. Secure RAG - Metadata Filtering - Query Expansion](#6-secure-rag-metadata-filtering---query-expansion)
+- [7. AI Quality Assurance (LLM as-a-Judge)](#7-ai-quality-assurance-llm-as-a-judge)
 - [8. AI Agent Configurations](#8-ai-agent-configurations)
 - [9. Open Knowledge Framework (OKF)](#9-open-knowledge-framework-okf)
 - [10. Database Migrations (Flyway)](#10-database-migrations-flyway)
@@ -182,7 +182,7 @@ If you are moving away from `localhost` to a hosted monitoring stack (e.g., Elas
 
 ---
 
-## 4. MultiCloud OAuth2 Configuration
+## 5. MultiCloud OAuth2 Configuration
 
 ### Azure
 
@@ -245,7 +245,7 @@ When `auth-azure` is active, the `/chat` endpoint expects the user to be authent
 
 ---
 
-## 5. Secure RAG - Metadata Filtering - Query Expansion
+## 6. Secure RAG - Metadata Filtering - Query Expansion
 
 The `secure-rag` profile extends the standard RAG capabilities by adding a security layer that filters documents based on the logged-in user's permissions.
 
@@ -279,7 +279,7 @@ To use it, activate the `query-expansion` profile along with a RAG profile:
 
 ---
 
-## 6. AI Quality Assurance (LLM as-a-Judge)
+## 7. AI Quality Assurance (LLM as-a-Judge)
 
 The `eval-testing` profile implements a **LLM-as-a-Judge** pattern to provide automated Quality Assurance for your AI responses.
 
