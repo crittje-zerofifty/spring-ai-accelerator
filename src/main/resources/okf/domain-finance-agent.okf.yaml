@@ -15,6 +15,9 @@ compliance_rules:
     threshold_eur: 0.00
     action: "REQUIRE_ATTACHMENT"
     description: "Every claim regardless of amount requires a valid receipt image or PDF."
+  - rule_id: "RULE_FRAUD_DETECTION"
+    action: "ESCALATE"
+    description: "Claims that appear suspicious, involve non-business related categories (e.g., gambling, adult entertainment), or show patterns of potential fraud must be ESCALATED for human review."
 
 relationships:
   depends_on:

@@ -1,9 +1,10 @@
 package nl.zerofifty.springaiaccelerator.application.port.output;
 
+import nl.zerofifty.springaiaccelerator.application.dto.ExpenseAuditResponse;
 import org.springframework.ai.document.Document;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface LlmOutputPort {
-    Flux<String> callWithContext(String prompt, List<Document> context);
+    Mono<ExpenseAuditResponse> callWithContext(String prompt, List<Document> context);
 }

@@ -340,20 +340,64 @@ The `okf` profile requires the `rag` profile to be active. A common "sovereign" 
 ### Feature: Employee Expense Auditing
 When the `okf` profile is active, a specialized `EmployeeExpenseController` is enabled at `/api/v1/expense/process`. This endpoint uses the loaded OKF policy data to evaluate expense claims against company rules using the LLM.
 
+The application returns a structured `ExpenseAuditResponse` DTO, ensuring high reliability for business logic and UI rendering.
+
 The following http request with body:
 ```json
 {
-  "recipe": "total amount: 20 euro, 8 euro for beers, 12 euro for souvinier of client"
+  "recipe": "total amount: 100 euro, 5 euro for sandwitch, 8 euro for beers, 12 euro for souvinier of client, 75 euro a new Ferrari"
 }
 ```
 
 Possibly results in a response like:
-```text
-Expense 1: Beer Expense: 8 EUR: REJECTED
-Expense 2: Souvenir Expense: 12 EUR: APPROVED
+```json
+{
+  "items": [
+    {
+      "index": 0,
+      "subject": "Food",
+      "amount": 5.0,
+      "status": "APPROVED",
+      "reason": "Expense for sandwich is within the meal cap."
+    },
+    {
+      "index": 1,
+      "subject": "Drinks",
+      "amount": 8.0,
+      "status": "REJECTED",
+      "reason": "Alcohol is not allowed."
+    },
+    {
+      "index": 2,
+      "subject": "Gifts",
+      "amount": 12.0,
+      "status": "ESCALATED",
+      "reason": "Souvenir is a luxury service and exceeds the limit of non-business related expenses."
+    },
+    {
+      "index": 3,
+      "subject": "Miscellaneous",
+      "amount": 75.0,
+      "status": "ESCALATED",
+      "reason": "An expense on a Ferrari is suspicious and exceeds the limit of non-business related expenses."
+    }
+  ],
+  "summary": "Total approved amount: 5 EUR. Total escalated amount: 87 EUR.",
+  "totalApprovedAmount": 5.0
+}
 
-Total expenses approved: 12 EUR
 ```
+
+And given the escalation rules it send out an email (log in the example) to the designated manager as per the OKF. 
+See the below details.
+
+
+### Feature: Knowledge-Driven Escalation
+The `okf` profile also demonstrates an **Agentic Workflow** for handling policy violations. If an expense is flagged as `ESCALATED` by the LLM (e.g., high-value items like a Jacuzzi), the system automatically triggers a reactive side-effect:
+1.  **Contextual Resolution**: It parses the OKF metadata from the retrieved documents to find the `escalates_to` relationship (e.g., `role_finance_manager`).
+2.  **Virtual Escalation**: It calls an `EscalationOutputPort` which, in the demonstration adapter, logs a "VIRTUAL EMAIL" to the console with all relevant details and the resolved recipient.
+
+This showcases how OKF structured knowledge can be used not just for prompt context, but to drive application logic and routing decisions.
 
 ---
 

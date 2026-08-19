@@ -12,6 +12,9 @@ sections:
   - section_id: "SEC_TRAVEL"
     title: "Travel Class"
     content: "Train travel within Europe must be Second Class unless total duration exceeds 4 hours."
+  - section_id: "SEC_FRAUD_PREVENTION"
+    title: "Fraud and Misuse Policy"
+    content: "The company maintains a zero-tolerance policy for fraud. Expenses for personal gains, high-value luxury services (e.g., Jacuzzis, luxury spa), or vaguely described high-amount items are considered suspicious and will be ESCALATED to the Finance Manager."
 
 relationships:
   governs:

@@ -1,7 +1,8 @@
 package nl.zerofifty.springaiaccelerator.application.port.input;
 
-import reactor.core.publisher.Flux;
+import nl.zerofifty.springaiaccelerator.application.dto.ExpenseAuditResponse;
+import reactor.core.publisher.Mono;
 
 public interface EmployeeExpenseInputPort {
-    Flux<String> processExpense(String recipe);
+    Mono<ExpenseAuditResponse> processExpense(String recipe);
 }
