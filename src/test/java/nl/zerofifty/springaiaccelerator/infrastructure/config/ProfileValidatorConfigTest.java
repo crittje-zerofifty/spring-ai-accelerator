@@ -45,4 +45,16 @@ class ProfileValidatorConfigTest {
 
         assertDoesNotThrow(testable::validateProfiles);
     }
+
+    @Test
+    void whenOkfIsActiveAndRagIsNotActive_thenThrowsIllegalStateException() {
+        when(env.getActiveProfiles()).thenReturn(new String[]{"okf"});
+        assertThrows(IllegalStateException.class, testable::validateProfiles);
+    }
+
+    @Test
+    void whenOkfIsActiveAndRagIsActive_thenDoesNotThrow() {
+        when(env.getActiveProfiles()).thenReturn(new String[]{"okf", "rag"});
+        assertDoesNotThrow(testable::validateProfiles);
+    }
 }

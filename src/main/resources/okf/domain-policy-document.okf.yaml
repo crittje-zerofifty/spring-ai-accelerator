@@ -1,0 +1,18 @@
+okf_version: "1.0"
+domain: "enterprise_ai_finance"
+entity:
+  id: "policy_document_2026_v2"
+  type: "KNOWLEDGE_BASE"
+  name: "Corporate Travel and Expense Policy 2026"
+
+sections:
+  - section_id: "SEC_MEALS"
+    title: "Meal Expenses"
+    content: "Breakfast is capped at 15 EUR, Lunch at 25 EUR, Dinner at 40 EUR. Alcohol is strictly non-refundable."
+  - section_id: "SEC_TRAVEL"
+    title: "Travel Class"
+    content: "Train travel within Europe must be Second Class unless total duration exceeds 4 hours."
+
+relationships:
+  governs:
+    - "agent_expense_approver"
