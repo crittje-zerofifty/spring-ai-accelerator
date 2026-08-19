@@ -1,0 +1,29 @@
+okf_version: "1.0"
+domain: "enterprise_ai_finance"
+entity:
+  id: "agent_expense_approver"
+  type: "AI_AGENT"
+  name: "Expense Approval Agent"
+  description: "Autonomous agent responsible for evaluating employee expense claims against company policy."
+
+compliance_rules:
+  - rule_id: "RULE_AUTO_APPROVE"
+    threshold_eur: 50.00
+    action: "AUTOMATIC_APPROVAL"
+    description: "Claims under 50 EUR without alcohol or gifts are automatically approved."
+  - rule_id: "RULE_RECEIPT_REQUIRED"
+    threshold_eur: 0.00
+    action: "REQUIRE_ATTACHMENT"
+    description: "Every claim regardless of amount requires a valid receipt image or PDF."
+  - rule_id: "RULE_FRAUD_DETECTION"
+    action: "ESCALATE"
+    description: "Claims that appear suspicious, involve non-business related categories (e.g., gambling, adult entertainment), or show patterns of potential fraud must be ESCALATED for human review."
+
+relationships:
+  depends_on:
+    - "policy_document_2026_v2"
+  escalates_to:
+    - "role_finance_manager"
+
+metadata:
+  owner_team: "fintech_core"

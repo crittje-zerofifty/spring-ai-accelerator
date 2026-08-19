@@ -24,6 +24,12 @@ public class ProfileValidatorConfig {
     public void validateProfiles() {
         List<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
 
+        if (activeProfiles.contains("okf") && !activeProfiles.contains("rag")) {
+            throw new IllegalStateException(
+                    "CRITICAL ERROR: Profile 'okf' requires the 'rag' profile to be active."
+            );
+        }
+
         if (activeProfiles.contains("secure-rag")) {
             boolean hasAuthProfile = activeProfiles.stream()
                     .anyMatch(profile -> profile.startsWith("auth-"));

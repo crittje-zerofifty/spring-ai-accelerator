@@ -7,12 +7,13 @@
 - [1. Ollama Installation](#1-ollama-installation)
 - [2. Architecture: Hexagonal & DDD](#2-architecture-hexagonal--ddd)
 - [3. Modularity & Profiles](#3-modularity--profiles)
-- [4. Monitoring Environments](#3-monitoring-environments)
-- [5. MultiCloud OAuth2 Configuration](#4-multicloud-oauth2-configuration)
-- [6. Secure RAG - Metadata Filtering - Query Expansion](#5-secure-rag-metadata-filtering---query-expansion)
-- [7. AI Quality Assurance (LLM as-a-Judge)](#6-ai-quality-assurance-eval-testing)
+- [4. Monitoring Environments](#4-monitoring-environments)
+- [5. MultiCloud OAuth2 Configuration](#5-multicloud-oauth2-configuration)
+- [6. Secure RAG - Metadata Filtering - Query Expansion](#6-secure-rag-metadata-filtering---query-expansion)
+- [7. AI Quality Assurance (LLM as-a-Judge)](#7-ai-quality-assurance-llm-as-a-judge)
 - [8. AI Agent Configurations](#8-ai-agent-configurations)
-- [9. Database Migrations (Flyway)](#9-database-migrations-flyway)
+- [9. Open Knowledge Framework (OKF)](#9-open-knowledge-framework-okf)
+- [10. Database Migrations (Flyway)](#10-database-migrations-flyway)
 
 In the rapidly evolving AI landscape, the vast majority of resources and boilerplates are tailored for Python 
 (LangChain) or JavaScript. While great for prototyping, these often fall short when integrated into **Enterprise 
@@ -118,6 +119,7 @@ This application is built with modularity at its core. You can easily toggle fea
 | `openai` | Configures OpenAI as the AI provider. | Using OpenAI models (requires `OPENAI_API_KEY`). |
 | `claude` | Configures Anthropic (Claude) as the AI provider. | Using Claude models (requires `ANTHROPIC_API_KEY`). |
 | `eval-testing` | Enables AI Quality Assurance (LLM-as-a-Judge). | To automatically evaluate RAG responses for faithfulness and relevance. Results are published via Micrometer Observations. |
+| `okf` | Enables Open Knowledge Framework (OKF) data loading and processing. | When you want to use structured OKF knowledge for domain-specific tasks like expense auditing. Requires `rag` profile. |
 
 ### Switching Profiles
 You can switch profiles in your `application.yaml` or via command line:
@@ -180,7 +182,7 @@ If you are moving away from `localhost` to a hosted monitoring stack (e.g., Elas
 
 ---
 
-## 4. MultiCloud OAuth2 Configuration
+## 5. MultiCloud OAuth2 Configuration
 
 ### Azure
 
@@ -243,7 +245,7 @@ When `auth-azure` is active, the `/chat` endpoint expects the user to be authent
 
 ---
 
-## 5. Secure RAG - Metadata Filtering - Query Expansion
+## 6. Secure RAG - Metadata Filtering - Query Expansion
 
 The `secure-rag` profile extends the standard RAG capabilities by adding a security layer that filters documents based on the logged-in user's permissions.
 
@@ -277,7 +279,7 @@ To use it, activate the `query-expansion` profile along with a RAG profile:
 
 ---
 
-## 6. AI Quality Assurance (LLM as-a-Judge)
+## 7. AI Quality Assurance (LLM as-a-Judge)
 
 The `eval-testing` profile implements a **LLM-as-a-Judge** pattern to provide automated Quality Assurance for your AI responses.
 
@@ -308,7 +310,98 @@ By maintaining these files, we ensure that any AI assistant—regardless of the 
 
 ---
 
-## 9. Database Migrations (Flyway)
+## 9. Open Knowledge Framework (OKF)
+
+The `okf` profile introduces support for Google's **Open Knowledge Framework**, allowing you to load domain-specific knowledge in a structured YAML format.
+
+### Why OKF?
+OKF provides a standardized way to define domains, entities, and compliance rules. In this project, we use it to represent corporate policies and AI agent behaviors, which are then converted into Spring AI `Document` instances with enriched metadata for precise RAG filtering.
+
+#### OKF vs. Traditional RAG
+
+While standard RAG is powerful for searching through large volumes of unstructured text, OKF offers several advantages and tradeoffs:
+
+**Pros (Benefits over RAG):**
+- **Reduced Hallucinations**: Traditional RAG relies on splitting documents into arbitrary chunks. This can break context (e.g., a rule and its exception being in different chunks). OKF uses structured YAML where related entities and rules are kept together, significantly reducing hallucinations caused by context fragmentation.
+- **Precise Metadata Filtering**: Because OKF is structured, every piece of information comes with rich, typed metadata. This allows for highly precise vector search filtering (e.g., "only look at compliance rules for the 'finance' domain") which is more reliable than purely semantic search.
+- **Improved Context Injection**: Instead of injecting raw text snippets, OKF allows for injecting structured knowledge that the LLM can parse more effectively, leading to more deterministic and auditable responses.
+
+**Cons (Tradeoffs):**
+- **Higher Curation Effort**: Unlike RAG, where you can just dump PDF/Text files into a vector store, OKF requires manual effort or specialized tools to structure knowledge into YAML format.
+- **Schema Rigidity**: OKF follows a specific schema. If your domain data doesn't fit well into the `entity/domain/rule` structure, it might feel restrictive compared to the "anything goes" approach of unstructured RAG.
+- **Maintenance Overhead**: Keeping YAML files in sync with evolving corporate policies requires a more disciplined documentation process.
+
+### Running with OKF
+The `okf` profile requires the `rag` profile to be active. A common "sovereign" setup using local models would be:
+```bash
+./gradlew bootRun --args='--spring.profiles.active=ollama,rag,okf'
+```
+
+### Feature: Employee Expense Auditing
+When the `okf` profile is active, a specialized `EmployeeExpenseController` is enabled at `/api/v1/expense/process`. This endpoint uses the loaded OKF policy data to evaluate expense claims against company rules using the LLM.
+
+The application returns a structured `ExpenseAuditResponse` DTO, ensuring high reliability for business logic and UI rendering.
+
+The following http request with body:
+```json
+{
+  "recipe": "total amount: 100 euro, 5 euro for sandwitch, 8 euro for beers, 12 euro for souvinier of client, 75 euro a new Ferrari"
+}
+```
+
+Possibly results in a response like:
+```json
+{
+  "items": [
+    {
+      "index": 0,
+      "subject": "Food",
+      "amount": 5.0,
+      "status": "APPROVED",
+      "reason": "Expense for sandwich is within the meal cap."
+    },
+    {
+      "index": 1,
+      "subject": "Drinks",
+      "amount": 8.0,
+      "status": "REJECTED",
+      "reason": "Alcohol is not allowed."
+    },
+    {
+      "index": 2,
+      "subject": "Gifts",
+      "amount": 12.0,
+      "status": "ESCALATED",
+      "reason": "Souvenir is a luxury service and exceeds the limit of non-business related expenses."
+    },
+    {
+      "index": 3,
+      "subject": "Miscellaneous",
+      "amount": 75.0,
+      "status": "ESCALATED",
+      "reason": "An expense on a Ferrari is suspicious and exceeds the limit of non-business related expenses."
+    }
+  ],
+  "summary": "Total approved amount: 5 EUR. Total escalated amount: 87 EUR.",
+  "totalApprovedAmount": 5.0
+}
+
+```
+
+And given the escalation rules it send out an email (log in the example) to the designated manager as per the OKF. 
+See the below details.
+
+
+### Feature: Knowledge-Driven Escalation
+The `okf` profile also demonstrates an **Agentic Workflow** for handling policy violations. If an expense is flagged as `ESCALATED` by the LLM (e.g., high-value items like a Jacuzzi), the system automatically triggers a reactive side-effect:
+1.  **Contextual Resolution**: It parses the OKF metadata from the retrieved documents to find the `escalates_to` relationship (e.g., `role_finance_manager`).
+2.  **Virtual Escalation**: It calls an `EscalationOutputPort` which, in the demonstration adapter, logs a "VIRTUAL EMAIL" to the console with all relevant details and the resolved recipient.
+
+This showcases how OKF structured knowledge can be used not just for prompt context, but to drive application logic and routing decisions.
+
+---
+
+## 10. Database Migrations (Flyway)
 
 In the `auth-azure`, `auth-aws` and `secure-rag` profiles, we use **Flyway** for database migrations.
 
